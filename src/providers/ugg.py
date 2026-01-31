@@ -35,16 +35,23 @@ class UGGProvider(BaseProvider):
         url = f"{self.base_url}/overview/{patch}/ranked_solo_5x5/{champion_id}/{role}/1.5.0.json"
 
         try:
+            print(f"DEBUG: Fetching from URL: {url}")
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
+                    print(f"DEBUG: Response status: {response.status}")
                     if response.status != 200:
+                        error_text = await response.text()
+                        print(f"DEBUG: Error response: {error_text[:200]}")
                         return None
 
                     data = await response.json()
+                    print(f"DEBUG: Successfully fetched data")
                     return self._parse_build_data(data)
 
         except Exception as e:
             print(f"U.GG fetch error: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     async def get_aram_build(self, champion_id: int, patch: str) -> Optional[BuildData]:
