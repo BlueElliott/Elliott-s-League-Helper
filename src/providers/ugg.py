@@ -5,7 +5,7 @@ Fetches build data from U.GG's structured API endpoints
 
 import aiohttp
 from typing import Optional, Dict, List
-from .base import BaseProvider, BuildData, RuneData, ItemBuild
+from providers.base import BaseProvider, BuildData, RuneData, ItemBuild
 
 
 class UGGProvider(BaseProvider):

@@ -4,7 +4,7 @@ Provides convenient methods for interacting with League Client API
 """
 
 from typing import Optional, List, Dict
-from .connector import LCUConnector
+from lcu.connector import LCUConnector
 
 
 class LCUAPI:

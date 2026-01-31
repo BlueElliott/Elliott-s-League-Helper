@@ -51,7 +51,7 @@ class LeagueHelper:
         while not await self.connector.connect():
             await asyncio.sleep(5)
 
-        print("✓ Connected to League client")
+        print("[OK] Connected to League client")
         print()
 
         # Initialize components
@@ -74,7 +74,7 @@ class LeagueHelper:
         # Setup WebSocket
         self.websocket = LCUWebSocket(self.connector.port, self.connector.token)
         if await self.websocket.connect():
-            print("✓ WebSocket connected")
+            print("[OK] WebSocket connected")
             print()
 
             # Register event handler for champion select
@@ -160,10 +160,10 @@ class LeagueHelper:
         build_data = await self.provider.get_build(champion_id, role, self.current_patch)
 
         if not build_data:
-            print("✗ Failed to fetch build data")
+            print("[FAILED] Failed to fetch build data")
             return
 
-        print("✓ Build data retrieved")
+        print("[OK] Build data retrieved")
 
         # Apply runes
         if build_data.runes:
@@ -173,7 +173,7 @@ class LeagueHelper:
                 role
             )
             if not success:
-                print("✗ Failed to apply runes")
+                print("[FAILED] Failed to apply runes")
 
         # Create item set (optional - requires champion key)
         # This would need Data Dragon integration for proper champion keys

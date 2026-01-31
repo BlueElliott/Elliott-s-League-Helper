@@ -36,8 +36,7 @@ class LCUWebSocket:
             uri = f"wss://riot:{self.token}@127.0.0.1:{self.port}/"
             self.ws = await websockets.connect(
                 uri,
-                ssl=ssl_context,
-                extra_headers={"Authorization": f"Basic {self.token}"}
+                ssl=ssl_context
             )
 
             # Subscribe to all events

@@ -4,8 +4,8 @@ Handles applying runes to the League client
 """
 
 from typing import Optional
-from ..lcu.api import LCUAPI
-from ..providers.base import BuildData, RuneData
+from lcu.api import LCUAPI
+from providers.base import BuildData, RuneData
 
 
 class RuneManager:
@@ -58,10 +58,10 @@ class RuneManager:
             )
 
             if result:
-                print(f"✓ Applied runes: {page_name}")
+                print(f"[OK] Applied runes: {page_name}")
                 return True
             else:
-                print(f"✗ Failed to apply runes: {page_name}")
+                print(f"[FAILED] Failed to apply runes: {page_name}")
                 return False
 
         except Exception as e:

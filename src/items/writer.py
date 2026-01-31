@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 from typing import Optional, List
-from ..providers.base import ItemBuild
+from providers.base import ItemBuild
 
 
 class ItemSetWriter:
@@ -87,7 +87,7 @@ class ItemSetWriter:
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(item_set, f, indent=2)
 
-            print(f"✓ Created item set: {file_path}")
+            print(f"[OK] Created item set: {file_path}")
             return True
 
         except Exception as e:
@@ -179,7 +179,7 @@ class ItemSetWriter:
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(item_set, f, indent=2)
 
-            print(f"✓ Created ARAM item set: {file_path}")
+            print(f"[OK] Created ARAM item set: {file_path}")
             return True
 
         except Exception as e:
