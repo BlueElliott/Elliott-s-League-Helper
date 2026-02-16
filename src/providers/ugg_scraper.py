@@ -7,6 +7,7 @@ import aiohttp
 from typing import Optional, List
 from bs4 import BeautifulSoup
 from providers.base import BaseProvider, BuildData, RuneData, ItemBuild
+from providers.champion_builds import get_champion_build
 
 
 # Champion ID to name mapping (will expand this)
@@ -69,8 +70,8 @@ class UGGScraperProvider(BaseProvider):
         """
         champion_name = CHAMPION_NAMES.get(champion_id)
         if not champion_name:
-            print(f"Unknown champion ID: {champion_id}")
-            return None
+            print(f"Unknown champion ID: {champion_id}, using fallback")
+            return get_champion_build(champion_id, role)
 
         role = self.normalize_role(role)
 
@@ -91,22 +92,22 @@ class UGGScraperProvider(BaseProvider):
                     if response.status != 200:
                         error_text = await response.text()
                         print(f"DEBUG: Error: {error_text[:200]}")
-                        return None
+                        return get_champion_build(champion_id, role)
 
                     html = await response.text()
-                    return self._parse_html(html)
+                    return self._parse_html(html, champion_id, role)
 
         except Exception as e:
             print(f"U.GG scraping error: {e}")
             import traceback
             traceback.print_exc()
-            return None
+            return get_champion_build(champion_id, role)
 
     async def get_aram_build(self, champion_id: int, patch: str) -> Optional[BuildData]:
         """Scrape ARAM build data"""
         champion_name = CHAMPION_NAMES.get(champion_id)
         if not champion_name:
-            return None
+            return get_champion_build(champion_id, 'aram')
 
         url = f"{self.base_url}/{champion_name}/build?queueType=normal_aram"
 
@@ -118,15 +119,15 @@ class UGGScraperProvider(BaseProvider):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, headers=headers) as response:
                     if response.status != 200:
-                        return None
+                        return get_champion_build(champion_id, 'aram')
 
                     html = await response.text()
-                    return self._parse_html(html)
+                    return self._parse_html(html, champion_id, 'aram')
 
         except Exception:
-            return None
+            return get_champion_build(champion_id, 'aram')
 
-    def _parse_html(self, html: str) -> Optional[BuildData]:
+    def _parse_html(self, html: str, champion_id: int, role: str) -> Optional[BuildData]:
         """
         Parse U.GG HTML to extract runes and items from window.__SSR_DATA__
 
@@ -163,15 +164,15 @@ class UGGScraperProvider(BaseProvider):
                 except json.JSONDecodeError as e:
                     print(f"DEBUG: JSON parse error: {e}")
 
-            # Fallback: Try to find data in other script tags or use sample data
-            print("DEBUG: Could not extract real data, using fallback sample runes")
-            return self._get_fallback_build()
+            # Fallback: Use champion-specific build
+            print(f"DEBUG: Using champion-specific fallback for champion {champion_id}")
+            return get_champion_build(champion_id, role)
 
         except Exception as e:
             print(f"HTML parsing error: {e}")
             import traceback
             traceback.print_exc()
-            return self._get_fallback_build()
+            return get_champion_build(champion_id, role)
 
     def _extract_runes_from_ssr(self, ssr_data: dict) -> Optional[RuneData]:
         """Extract rune data from SSR data structure"""
