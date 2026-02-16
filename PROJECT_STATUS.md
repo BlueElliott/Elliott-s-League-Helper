@@ -112,11 +112,12 @@ Solution: Switched to web scraping instead
 - ❌ Source selection UI
 - ❌ Fallback logic when one source fails
 
-### Milestone 5: User Interface (0% Complete)
-- ❌ System tray icon (pystray)
-- ❌ Settings window (PyQt6 or tkinter)
-- ❌ Status indicators
-- ❌ Visual feedback (currently console only)
+### Milestone 5: User Interface (60% Complete)
+- ✅ System tray icon (pystray)
+- ✅ Status indicators (green/red icon)
+- ✅ Visual feedback (tray notifications)
+- ✅ Start/Stop controls
+- ❌ Settings window
 - ❌ Optional: Flask web UI
 
 ---
@@ -227,7 +228,7 @@ python -u run.py
 
 ## 📊 Progress Summary
 
-**Overall Progress:** ~25% Complete
+**Overall Progress:** ~50% Complete
 
 | Milestone | Status | Completion |
 |-----------|--------|------------|

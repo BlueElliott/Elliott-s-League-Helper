@@ -238,3 +238,11 @@ class UGGScraperProvider(BaseProvider):
             items=self._get_fallback_items(),
             summoner_spells=[4, 14]
         )
+
+    async def get_current_patch(self) -> Optional[str]:
+        """
+        Get current patch version
+        Returns a default patch for now
+        """
+        # TODO: Fetch actual current patch from Riot API or Data Dragon
+        return "14_1"
