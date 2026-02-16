@@ -118,15 +118,19 @@ class VisualLeagueHelper:
             my_team = data.get('myTeam', [])
             for player in my_team:
                 if player.get('cellId') == cell_id:
+                    # Check both championId (locked) and championPickIntent (hovering)
                     champion_id = player.get('championId', 0)
+
+                    # If not locked, check hover/pick intent
                     if champion_id == 0:
-                        return
+                        champion_id = player.get('championPickIntent', 0)
+
+                    if champion_id == 0:
+                        return  # No champion selected or hovered
 
                     role = player.get('assignedPosition', '').lower()
-                    if not role:
-                        role = 'middle'
 
-                    # Prevent duplicate processing
+                    # Prevent duplicate processing of same champion
                     if hasattr(self, '_last_champion') and self._last_champion == (champion_id, role):
                         return
 
@@ -142,6 +146,15 @@ class VisualLeagueHelper:
     async def process_champion_selection(self, champion_id: int, role: str):
         """Process champion selection and display builds"""
         champion_name = CHAMPION_NAMES.get(champion_id, f"Champion{champion_id}")
+
+        # Handle practice tool / no-role modes
+        if not role or role == '':
+            role = 'top'  # Default for practice tool
+            print(f"[INFO] No role detected (Practice Tool?), using default: {role}")
+
+        # Store for apply function
+        self._current_champion_name = champion_name
+        self._current_role = role
 
         print(f"\n{'=' * 50}")
         print(f"Champion selected: {champion_name} ({role})")
@@ -171,9 +184,9 @@ class VisualLeagueHelper:
         print("Applying runes...")
 
         if build_data.runes:
-            # Get champion name from current display
-            champion_name = "Champion"  # Would get from GUI
-            role = "mid"  # Would get from GUI
+            # Get champion name and role from last selection
+            champion_name = getattr(self, '_current_champion_name', 'Champion')
+            role = getattr(self, '_current_role', 'mid')
 
             success = await self.rune_manager.apply_runes(
                 build_data.runes,
@@ -182,7 +195,7 @@ class VisualLeagueHelper:
             )
 
             if success:
-                self.gui.update_status("Runes applied successfully!", '#4ecca3')
+                self.gui.update_status(f"Runes applied for {champion_name}!", '#4ecca3')
             else:
                 self.gui.update_status("Failed to apply runes", '#ff6b6b')
 
