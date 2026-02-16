@@ -11,19 +11,19 @@ from typing import Optional
 from lcu.connector import LCUConnector
 from lcu.websocket import LCUWebSocket
 from lcu.api import LCUAPI
-from providers.ugg import UGGProvider
+from providers.ugg_scraper import UGGScraperProvider
 from runes.manager import RuneManager
 from items.writer import ItemSetWriter
 
 
-# Champion ID to name mapping (partial - will be expanded with Data Dragon)
-CHAMPION_NAMES = {
-    1: "Annie", 2: "Olaf", 3: "Galio", 4: "TwistedFate", 5: "XinZhao",
-    6: "Urgot", 7: "LeBlanc", 8: "Vladimir", 9: "Fiddlesticks", 10: "Kayle",
-    # Add more as needed or fetch from Data Dragon
-    103: "Ahri", 84: "Akali", 12: "Alistar", 32: "Amumu", 34: "Anivia",
-    # This will be replaced with full Data Dragon integration
-}
+# Import champion names from scraper
+from providers.ugg_scraper import CHAMPION_NAMES as CHAMPION_ID_MAP
+
+# Convert to title case for display
+CHAMPION_NAMES = {k: v.title().replace("Khazix", "Kha'Zix").replace("Kogmaw", "Kog'Maw")
+                 .replace("Reksai", "Rek'Sai").replace("Velkoz", "Vel'Koz")
+                 .replace("Chogath", "Cho'Gath").replace("Kaisa", "Kai'Sa")
+                 for k, v in CHAMPION_ID_MAP.items()}
 
 
 class LeagueHelper:
@@ -33,7 +33,7 @@ class LeagueHelper:
         self.connector = LCUConnector()
         self.api: Optional[LCUAPI] = None
         self.websocket: Optional[LCUWebSocket] = None
-        self.provider = UGGProvider()
+        self.provider = UGGScraperProvider()
         self.rune_manager: Optional[RuneManager] = None
         self.item_writer = ItemSetWriter()
         self.running = False
