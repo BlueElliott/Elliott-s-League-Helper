@@ -11,7 +11,8 @@
       "Bash(timeout 5 tail:*)",
       "Bash(exit 0)",
       "Bash(python:*)",
-      "WebFetch(domain:u.gg)"
+      "WebFetch(domain:u.gg)",
+      "WebFetch(domain:stats2.u.gg)"
     ]
   }
 }

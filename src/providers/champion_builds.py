@@ -8,18 +8,18 @@ from providers.base import RuneData, ItemBuild, BuildData
 
 # Champion-specific rune builds (using valid Season 2026 IDs)
 CHAMPION_BUILDS = {
-    # Mages
+    # === MAGES ===
     103: {  # Ahri
         'runes': RuneData(
-            primary_style=8200,  # Sorcery
-            sub_style=8100,      # Domination
+            primary_style=8100,  # Domination
+            sub_style=8200,      # Sorcery
             selected_perks=[
-                8214,  # Summon Aery
-                8226,  # Manaflow Band
-                8210,  # Transcendence
-                8237,  # Scorch
+                8112,  # Electrocute
                 8143,  # Sudden Impact
+                8120,  # Ghost Poro
                 8135,  # Treasure Hunter
+                8226,  # Manaflow Band
+                8237,  # Scorch
                 5008,  # Adaptive Force
                 5008,  # Adaptive Force
                 5002   # Armor
@@ -28,7 +28,45 @@ CHAMPION_BUILDS = {
         'summoner_spells': [4, 14]  # Flash + Ignite
     },
 
-    # Tanks
+    34: {  # Anivia
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8214,  # Summon Aery
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]  # Flash + TP
+    },
+
+    99: {  # Lux
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8229,  # Arcane Comet
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8237,  # Scorch
+                8304,  # Magical Footwear
+                8345,  # Biscuit Delivery
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]  # Flash + Ignite
+    },
+
+    # === TANKS / JUNGLERS ===
     154: {  # Zac
         'runes': RuneData(
             primary_style=8400,  # Resolve
@@ -48,7 +86,45 @@ CHAMPION_BUILDS = {
         'summoner_spells': [4, 11]  # Flash + Smite
     },
 
-    # Fighters
+    32: {  # Amumu
+        'runes': RuneData(
+            primary_style=8400,  # Resolve
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8439,  # Aftershock
+                8446,  # Demolish
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                8009,  # Presence of Mind
+                8014,  # Coup de Grace
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]  # Flash + Smite
+    },
+
+    20: {  # Nunu
+        'runes': RuneData(
+            primary_style=8400,  # Resolve
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8439,  # Aftershock
+                8446,  # Demolish
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]  # Flash + Smite
+    },
+
+    # === FIGHTERS / TOP LANERS ===
     266: {  # Aatrox
         'runes': RuneData(
             primary_style=8000,  # Precision
@@ -57,7 +133,7 @@ CHAMPION_BUILDS = {
                 8010,  # Conqueror
                 9101,  # Overheal
                 9104,  # Legend: Alacrity
-                8299,  # Last Stand
+                8014,  # Coup de Grace
                 8473,  # Bone Plating
                 8451,  # Overgrowth
                 5005,  # Attack Speed
@@ -68,18 +144,229 @@ CHAMPION_BUILDS = {
         'summoner_spells': [4, 12]  # Flash + Teleport
     },
 
-    # Supports
-    16: {  # Poppy
+    24: {  # Jax
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Overheal
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]  # Flash + Ignite
+    },
+
+    122: {  # Darius
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Overheal
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 6]  # Flash + Ghost
+    },
+
+    # === ASSASSINS ===
+    238: {  # Zed
+        'runes': RuneData(
+            primary_style=8100,  # Domination
+            sub_style=8200,      # Sorcery
+            selected_perks=[
+                8112,  # Electrocute
+                8143,  # Sudden Impact
+                8120,  # Ghost Poro
+                8135,  # Treasure Hunter
+                8226,  # Manaflow Band
+                8237,  # Scorch
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]  # Flash + Ignite
+    },
+
+    121: {  # Kha'Zix
+        'runes': RuneData(
+            primary_style=8100,  # Domination
+            sub_style=8200,      # Sorcery
+            selected_perks=[
+                8128,  # Dark Harvest
+                8143,  # Sudden Impact
+                8120,  # Ghost Poro
+                8135,  # Treasure Hunter
+                8226,  # Manaflow Band
+                8236,  # Gathering Storm
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]  # Flash + Smite
+    },
+
+    84: {  # Akali
+        'runes': RuneData(
+            primary_style=8100,  # Domination
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8112,  # Electrocute
+                8143,  # Sudden Impact
+                8120,  # Ghost Poro
+                8135,  # Treasure Hunter
+                8009,  # Presence of Mind
+                8014,  # Coup de Grace
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]  # Flash + Ignite
+    },
+
+    # === MARKSMEN / ADC ===
+    222: {  # Jinx
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8021,  # Fleet Footwork
+                9101,  # Overheal
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 7]  # Flash + Heal
+    },
+
+    22: {  # Ashe
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8005,  # Press the Attack
+                9101,  # Overheal
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 7]  # Flash + Heal
+    },
+
+    51: {  # Caitlyn
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8021,  # Fleet Footwork
+                9101,  # Overheal
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8120,  # Ghost Poro
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 7]  # Flash + Heal
+    },
+
+    166: {  # Akshan
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8005,  # Press the Attack
+                9101,  # Overheal
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]  # Flash + Ignite
+    },
+
+    # === SUPPORTS ===
+    412: {  # Thresh
         'runes': RuneData(
             primary_style=8400,  # Resolve
             sub_style=8300,      # Inspiration
             selected_perks=[
-                8437,  # Grasp of the Undying
+                8439,  # Aftershock
                 8446,  # Demolish
                 8473,  # Bone Plating
                 8451,  # Overgrowth
                 8304,  # Magical Footwear
                 8347,  # Cosmic Insight
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]  # Flash + Ignite
+    },
+
+    117: {  # Lulu
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8214,  # Summon Aery
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 3]  # Flash + Exhaust
+    },
+
+    16: {  # Soraka (changed from Poppy)
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8214,  # Summon Aery
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8473,  # Bone Plating
+                8451,  # Overgrowth
                 5008,  # Adaptive Force
                 5008,  # Adaptive Force
                 5002   # Armor
