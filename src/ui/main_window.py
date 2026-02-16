@@ -1,82 +1,74 @@
 """
 Main GUI Window
-Visual interface for viewing and applying runes
+Visual interface with rune and item icons
 """
 
 import tkinter as tk
-from tkinter import ttk, scrolledtext
+from tkinter import ttk
 from typing import Optional, Callable
 from providers.base import BuildData
+from PIL import Image, ImageTk
+import io
+import requests
+from functools import lru_cache
 
 
-# Rune tree names
+# Rune tree names and colors
 RUNE_TREES = {
-    8000: "Precision",
-    8100: "Domination",
-    8200: "Sorcery",
-    8300: "Inspiration",
-    8400: "Resolve"
+    8000: ("Precision", "#C8AA6E"),
+    8100: ("Domination", "#DC354A"),
+    8200: ("Sorcery", "#5E9BE0"),
+    8300: ("Inspiration", "#49AAB9"),
+    8400: ("Resolve", "#00A550")
 }
 
-# Rune names (partial list - will expand)
-RUNE_NAMES = {
-    # Precision
-    8005: "Press the Attack", 8008: "Lethal Tempo", 8021: "Fleet Footwork", 8010: "Conqueror",
-    8009: "Presence of Mind", 9101: "Overheal", 8014: "Coup de Grace",
-
-    # Domination
-    8112: "Electrocute", 8124: "Predator", 8128: "Dark Harvest", 9923: "Hail of Blades",
-    8143: "Sudden Impact", 8136: "Zombie Ward", 8120: "Ghost Poro", 8138: "Eyeball Collection",
-    8135: "Treasure Hunter", 8134: "Ingenious Hunter", 8105: "Relentless Hunter", 8106: "Ultimate Hunter",
-
-    # Sorcery
-    8214: "Summon Aery", 8229: "Arcane Comet", 8230: "Phase Rush",
-    8224: "Nullifying Orb", 8226: "Manaflow Band", 8275: "Nimbus Cloak",
-    8210: "Transcendence", 8234: "Celerity", 8233: "Absolute Focus",
-    8237: "Scorch", 8232: "Waterwalking", 8236: "Gathering Storm",
-
-    # Resolve
-    8437: "Grasp of the Undying", 8439: "Aftershock", 8465: "Guardian",
-    8446: "Demolish", 8463: "Font of Life", 8401: "Shield Bash",
-    8429: "Conditioning", 8444: "Second Wind", 8473: "Bone Plating",
-    8451: "Overgrowth", 8453: "Revitalize", 8242: "Unflinching",
-
-    # Inspiration
-    8351: "Glacial Augment", 8360: "Unsealed Spellbook", 8369: "First Strike",
-    8306: "Hexflash", 8304: "Magical Footwear", 8313: "Perfect Timing",
-    8321: "Futures Market", 8316: "Minion Dematerializer", 8345: "Biscuit Delivery",
-    8347: "Cosmic Insight", 8410: "Approach Velocity", 8352: "Time Warp Tonic",
-
-    # Stat shards
-    5008: "Adaptive Force", 5005: "Attack Speed", 5007: "Ability Haste",
-    5002: "Armor", 5003: "Magic Resist", 5001: "Health"
+# Summoner spell names
+SUMMONER_SPELLS = {
+    1: "Cleanse", 3: "Exhaust", 4: "Flash", 6: "Ghost", 7: "Heal",
+    11: "Smite", 12: "Teleport", 13: "Clarity", 14: "Ignite", 21: "Barrier"
 }
+
+# CDN URL for assets
+DDRAGON_VERSION = "16.3.1"
+RUNE_CDN = f"https://ddragon.leagueoflegends.com/cdn/img/"
+ITEM_CDN = f"https://ddragon.leagueoflegends.com/cdn/{DDRAGON_VERSION}/img/item/"
+SPELL_CDN = f"https://ddragon.leagueoflegends.com/cdn/{DDRAGON_VERSION}/img/spell/"
+
+
+@lru_cache(maxsize=200)
+def fetch_image(url: str, size: tuple = (48, 48)) -> Optional[ImageTk.PhotoImage]:
+    """Fetch and cache an image from URL"""
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            img = Image.open(io.BytesIO(response.content))
+            img = img.resize(size, Image.Resampling.LANCZOS)
+            return ImageTk.PhotoImage(img)
+    except Exception as e:
+        print(f"Failed to load image {url}: {e}")
+    return None
 
 
 class RuneDisplayWindow:
-    """Main GUI window for displaying runes"""
+    """Main GUI window with visual rune and item display"""
 
     def __init__(self, on_apply: Optional[Callable] = None):
-        """
-        Initialize GUI window
-
-        Args:
-            on_apply: Callback when user clicks "Apply Runes"
-        """
+        """Initialize GUI window"""
         self.on_apply = on_apply
         self.current_build: Optional[BuildData] = None
+        self.image_refs = []  # Keep references to prevent garbage collection
 
         # Create main window
         self.root = tk.Tk()
         self.root.title("Elliott's League Helper")
-        self.root.geometry("600x700")
+        self.root.geometry("700x800")
         self.root.resizable(False, False)
+        self.root.configure(bg='#0a0e27')
 
-        # Set icon color (would use actual icon in production)
         try:
             self.root.iconbitmap(default='icon.ico')
         except:
-            pass  # Icon file not found, skip
+            pass
 
         self._create_widgets()
 
@@ -91,7 +83,7 @@ class RuneDisplayWindow:
         title_label = tk.Label(
             header_frame,
             text="Elliott's League Helper",
-            font=('Arial', 18, 'bold'),
+            font=('Segoe UI', 20, 'bold'),
             fg='white',
             bg='#1a1a2e'
         )
@@ -105,69 +97,61 @@ class RuneDisplayWindow:
         self.status_label = tk.Label(
             status_frame,
             text="⚪ Waiting for champion selection...",
-            font=('Arial', 10),
+            font=('Segoe UI', 10),
             fg='#e0e0e0',
             bg='#16213e'
         )
         self.status_label.pack(pady=10)
 
-        # Main content area
-        content_frame = tk.Frame(self.root, bg='#0f3460')
-        content_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        # Scrollable content area
+        canvas = tk.Canvas(self.root, bg='#0a0e27', highlightthickness=0)
+        scrollbar = tk.Scrollbar(self.root, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = tk.Frame(canvas, bg='#0a0e27')
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
 
         # Champion info
-        self.champion_frame = tk.LabelFrame(
-            content_frame,
-            text="Champion Build",
-            font=('Arial', 12, 'bold'),
-            fg='white',
-            bg='#0f3460'
-        )
-        self.champion_frame.pack(fill='x', pady=(0, 10))
-
         self.champion_label = tk.Label(
-            self.champion_frame,
-            text="No champion selected",
-            font=('Arial', 14),
+            self.scrollable_frame,
+            text="Select a champion in League client",
+            font=('Segoe UI', 16, 'bold'),
             fg='white',
-            bg='#0f3460'
+            bg='#0a0e27'
         )
-        self.champion_label.pack(pady=10)
+        self.champion_label.pack(pady=15)
 
-        # Runes display
-        runes_frame = tk.LabelFrame(
-            content_frame,
-            text="Runes",
-            font=('Arial', 12, 'bold'),
-            fg='white',
-            bg='#0f3460'
-        )
-        runes_frame.pack(fill='both', expand=True)
+        # Runes container
+        self.runes_container = tk.Frame(self.scrollable_frame, bg='#0a0e27')
+        self.runes_container.pack(fill='x', padx=20, pady=10)
 
-        # Runes text area
-        self.runes_text = scrolledtext.ScrolledText(
-            runes_frame,
-            font=('Courier', 10),
-            bg='#1a1a2e',
-            fg='white',
-            height=20,
-            wrap='word'
-        )
-        self.runes_text.pack(fill='both', expand=True, padx=5, pady=5)
+        # Items container
+        self.items_container = tk.Frame(self.scrollable_frame, bg='#0a0e27')
+        self.items_container.pack(fill='x', padx=20, pady=10)
 
-        # Buttons frame
-        button_frame = tk.Frame(self.root, bg='#0f3460')
-        button_frame.pack(fill='x', padx=10, pady=10)
+        # Apply button
+        button_frame = tk.Frame(self.root, bg='#0a0e27')
+        button_frame.pack(fill='x', padx=20, pady=15)
 
         self.apply_button = tk.Button(
             button_frame,
-            text="Apply Runes",
-            font=('Arial', 12, 'bold'),
+            text="Apply Runes & Items",
+            font=('Segoe UI', 14, 'bold'),
             bg='#4ecca3',
             fg='white',
             command=self._on_apply_clicked,
             state='disabled',
-            height=2
+            height=2,
+            relief='flat',
+            cursor='hand2'
         )
         self.apply_button.pack(fill='x')
 
@@ -180,59 +164,263 @@ class RuneDisplayWindow:
         self.status_label.config(text=f"{icon} {message}", fg=color)
 
     def display_build(self, champion_name: str, role: str, build_data: BuildData):
-        """Display runes and items for a champion"""
+        """Display runes and items with icons"""
         self.current_build = build_data
+        self.image_refs.clear()
 
         # Update champion info
         self.champion_label.config(text=f"{champion_name} - {role.upper()}")
 
-        # Build rune display text
-        runes = build_data.runes
-        primary_tree = RUNE_TREES.get(runes.primary_style, f"Tree {runes.primary_style}")
-        sub_tree = RUNE_TREES.get(runes.sub_style, f"Tree {runes.sub_style}")
+        # Clear previous content
+        for widget in self.runes_container.winfo_children():
+            widget.destroy()
+        for widget in self.items_container.winfo_children():
+            widget.destroy()
 
-        text = f"PRIMARY: {primary_tree}\n"
-        text += "=" * 50 + "\n\n"
-
-        # Display perks
-        for i, perk_id in enumerate(runes.selected_perks[:6]):  # First 6 are tree perks
-            perk_name = RUNE_NAMES.get(perk_id, f"Rune {perk_id}")
-            if i == 0:
-                text += f"🔶 KEYSTONE: {perk_name}\n\n"
-            elif i == 4:
-                text += f"\nSECONDARY: {sub_tree}\n"
-                text += "=" * 50 + "\n\n"
-                text += f"  • {perk_name}\n"
-            else:
-                text += f"  • {perk_name}\n"
-
-        text += "\nSTAT SHARDS\n"
-        text += "=" * 50 + "\n\n"
-
-        # Stat shards (last 3 perks)
-        for perk_id in runes.selected_perks[6:]:
-            perk_name = RUNE_NAMES.get(perk_id, f"Shard {perk_id}")
-            text += f"  ⬥ {perk_name}\n"
+        # Display runes
+        self._display_runes(build_data.runes)
 
         # Display items
-        text += "\n\nITEMS\n"
-        text += "=" * 50 + "\n\n"
-        text += f"Starting: {build_data.items.starting_items}\n"
-        text += f"Core: {build_data.items.core_items}\n"
-        text += f"Situational: {build_data.items.situational_items}\n"
+        self._display_items(build_data.items)
 
-        # Summoner spells
+        # Display summoner spells
         if build_data.summoner_spells:
-            text += "\n\nSUMMONER SPELLS\n"
-            text += "=" * 50 + "\n\n"
-            text += f"Spells: {build_data.summoner_spells}\n"
-
-        # Update text area
-        self.runes_text.delete('1.0', 'end')
-        self.runes_text.insert('1.0', text)
+            self._display_summoner_spells(build_data.summoner_spells)
 
         # Enable apply button
         self.apply_button.config(state='normal', bg='#4ecca3')
+
+    def _display_runes(self, runes):
+        """Display runes visually with icons"""
+        primary_tree, primary_color = RUNE_TREES.get(runes.primary_style, ("Unknown", "#888888"))
+        sub_tree, sub_color = RUNE_TREES.get(runes.sub_style, ("Unknown", "#888888"))
+
+        # Primary tree header
+        primary_header = tk.Frame(self.runes_container, bg='#0a0e27')
+        primary_header.pack(fill='x', pady=(0, 10))
+
+        tk.Label(
+            primary_header,
+            text=f"PRIMARY: {primary_tree}",
+            font=('Segoe UI', 12, 'bold'),
+            fg=primary_color,
+            bg='#0a0e27'
+        ).pack(anchor='w')
+
+        # Primary runes grid
+        primary_frame = tk.Frame(self.runes_container, bg='#16213e', relief='solid', bd=1)
+        primary_frame.pack(fill='x', pady=5)
+
+        # Keystone (larger)
+        keystone_frame = tk.Frame(primary_frame, bg='#16213e')
+        keystone_frame.pack(pady=10)
+
+        self._create_rune_icon(keystone_frame, runes.selected_perks[0], size=(64, 64), is_keystone=True)
+
+        # Primary perks (3 runes)
+        perks_frame = tk.Frame(primary_frame, bg='#16213e')
+        perks_frame.pack(pady=10)
+
+        for i in range(1, 4):
+            self._create_rune_icon(perks_frame, runes.selected_perks[i], size=(48, 48))
+
+        # Secondary tree header
+        secondary_header = tk.Frame(self.runes_container, bg='#0a0e27')
+        secondary_header.pack(fill='x', pady=(15, 10))
+
+        tk.Label(
+            secondary_header,
+            text=f"SECONDARY: {sub_tree}",
+            font=('Segoe UI', 12, 'bold'),
+            fg=sub_color,
+            bg='#0a0e27'
+        ).pack(anchor='w')
+
+        # Secondary runes grid
+        secondary_frame = tk.Frame(self.runes_container, bg='#16213e', relief='solid', bd=1)
+        secondary_frame.pack(fill='x', pady=5)
+
+        sec_perks_frame = tk.Frame(secondary_frame, bg='#16213e')
+        sec_perks_frame.pack(pady=10)
+
+        for i in range(4, 6):
+            self._create_rune_icon(sec_perks_frame, runes.selected_perks[i], size=(48, 48))
+
+        # Stat shards header
+        shards_header = tk.Frame(self.runes_container, bg='#0a0e27')
+        shards_header.pack(fill='x', pady=(15, 10))
+
+        tk.Label(
+            shards_header,
+            text="STAT SHARDS",
+            font=('Segoe UI', 12, 'bold'),
+            fg='#C8AA6E',
+            bg='#0a0e27'
+        ).pack(anchor='w')
+
+        # Stat shards
+        shards_frame = tk.Frame(self.runes_container, bg='#16213e', relief='solid', bd=1)
+        shards_frame.pack(fill='x', pady=5)
+
+        shards_row = tk.Frame(shards_frame, bg='#16213e')
+        shards_row.pack(pady=10)
+
+        for i in range(6, 9):
+            if i < len(runes.selected_perks):
+                self._create_stat_shard(shards_row, runes.selected_perks[i])
+
+    def _create_rune_icon(self, parent, perk_id: int, size: tuple = (48, 48), is_keystone: bool = False):
+        """Create a rune icon"""
+        frame = tk.Frame(parent, bg='#16213e')
+        frame.pack(side='left', padx=5)
+
+        # Try to load rune icon from CDN
+        # Note: This is a simplified approach - real implementation would need proper rune ID to icon mapping
+        placeholder = tk.Label(
+            frame,
+            text=str(perk_id),
+            font=('Segoe UI', 8 if not is_keystone else 10),
+            fg='white',
+            bg='#2a2a4e',
+            width=size[0]//8,
+            height=size[1]//16,
+            relief='solid',
+            bd=1
+        )
+        placeholder.pack()
+
+    def _create_stat_shard(self, parent, shard_id: int):
+        """Create a stat shard icon"""
+        shard_names = {
+            5008: "AF", 5005: "AS", 5007: "AH",
+            5002: "ARM", 5003: "MR", 5001: "HP"
+        }
+
+        frame = tk.Frame(parent, bg='#16213e')
+        frame.pack(side='left', padx=5)
+
+        label = tk.Label(
+            frame,
+            text=shard_names.get(shard_id, str(shard_id)),
+            font=('Segoe UI', 10, 'bold'),
+            fg='#C8AA6E',
+            bg='#2a2a4e',
+            width=4,
+            height=2,
+            relief='solid',
+            bd=1
+        )
+        label.pack()
+
+    def _display_items(self, items):
+        """Display items visually with icons"""
+        # Items header
+        items_header = tk.Frame(self.items_container, bg='#0a0e27')
+        items_header.pack(fill='x', pady=(15, 10))
+
+        tk.Label(
+            items_header,
+            text="RECOMMENDED ITEMS",
+            font=('Segoe UI', 12, 'bold'),
+            fg='#4ecca3',
+            bg='#0a0e27'
+        ).pack(anchor='w')
+
+        items_frame = tk.Frame(self.items_container, bg='#16213e', relief='solid', bd=1)
+        items_frame.pack(fill='x', pady=5, padx=0)
+
+        # Starting items
+        self._create_item_row(items_frame, "Starting", items.starting_items)
+
+        # Core items
+        self._create_item_row(items_frame, "Core Build", items.core_items)
+
+        # Situational items
+        self._create_item_row(items_frame, "Situational", items.situational_items)
+
+    def _create_item_row(self, parent, label: str, item_ids: list):
+        """Create a row of item icons"""
+        row_frame = tk.Frame(parent, bg='#16213e')
+        row_frame.pack(fill='x', pady=8, padx=10)
+
+        tk.Label(
+            row_frame,
+            text=label + ":",
+            font=('Segoe UI', 10, 'bold'),
+            fg='white',
+            bg='#16213e',
+            width=12,
+            anchor='w'
+        ).pack(side='left', padx=(0, 10))
+
+        icons_frame = tk.Frame(row_frame, bg='#16213e')
+        icons_frame.pack(side='left')
+
+        for item_id in item_ids:
+            self._create_item_icon(icons_frame, item_id)
+
+    def _create_item_icon(self, parent, item_id: int):
+        """Create an item icon"""
+        # Try to fetch real item icon from CDN
+        url = f"{ITEM_CDN}{item_id}.png"
+        img = fetch_image(url, size=(40, 40))
+
+        if img:
+            self.image_refs.append(img)
+            label = tk.Label(parent, image=img, bg='#16213e', bd=1, relief='solid')
+        else:
+            # Fallback to item ID
+            label = tk.Label(
+                parent,
+                text=str(item_id),
+                font=('Segoe UI', 8),
+                fg='white',
+                bg='#2a2a4e',
+                width=5,
+                height=2,
+                relief='solid',
+                bd=1
+            )
+
+        label.pack(side='left', padx=2)
+
+    def _display_summoner_spells(self, spell_ids: list):
+        """Display summoner spells"""
+        spells_header = tk.Frame(self.items_container, bg='#0a0e27')
+        spells_header.pack(fill='x', pady=(15, 10))
+
+        tk.Label(
+            spells_header,
+            text="SUMMONER SPELLS",
+            font=('Segoe UI', 12, 'bold'),
+            fg='#5E9BE0',
+            bg='#0a0e27'
+        ).pack(anchor='w')
+
+        spells_frame = tk.Frame(self.items_container, bg='#16213e', relief='solid', bd=1)
+        spells_frame.pack(fill='x', pady=5)
+
+        row = tk.Frame(spells_frame, bg='#16213e')
+        row.pack(pady=10)
+
+        for spell_id in spell_ids:
+            spell_name = SUMMONER_SPELLS.get(spell_id, f"Spell{spell_id}")
+
+            frame = tk.Frame(row, bg='#16213e')
+            frame.pack(side='left', padx=10)
+
+            label = tk.Label(
+                frame,
+                text=spell_name,
+                font=('Segoe UI', 10, 'bold'),
+                fg='white',
+                bg='#2a2a4e',
+                width=10,
+                height=2,
+                relief='solid',
+                bd=1
+            )
+            label.pack()
 
     def _on_apply_clicked(self):
         """Handle apply button click"""
