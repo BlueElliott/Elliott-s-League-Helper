@@ -10,7 +10,8 @@
       "Bash(python main.py:*)",
       "Bash(timeout 5 tail:*)",
       "Bash(exit 0)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "WebFetch(domain:u.gg)"
     ]
   }
 }

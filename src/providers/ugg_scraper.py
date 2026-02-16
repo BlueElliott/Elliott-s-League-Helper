@@ -128,48 +128,113 @@ class UGGScraperProvider(BaseProvider):
 
     def _parse_html(self, html: str) -> Optional[BuildData]:
         """
-        Parse U.GG HTML to extract runes and items
+        Parse U.GG HTML to extract runes and items from window.__SSR_DATA__
 
-        Note: This is a simplified parser. U.GG's actual structure may require
-        more sophisticated parsing or use of their internal API calls.
+        U.GG embeds build data as JSON in script tags via window.__SSR_DATA__
         """
         try:
-            soup = BeautifulSoup(html, 'html.parser')
+            import json
+            import re
 
-            # For now, return hardcoded sample data
-            # TODO: Implement actual HTML parsing when we can inspect the structure
-            print("DEBUG: HTML received, but parsing not fully implemented yet")
-            print("DEBUG: Using fallback sample runes for testing")
+            # Extract window.__SSR_DATA__ from script tags
+            ssr_data_match = re.search(r'window\.__SSR_DATA__\s*=\s*({.+?});', html, re.DOTALL)
 
-            # Sample runes for testing (Electrocute - Domination + Precision)
-            sample_runes = RuneData(
-                primary_style=8100,  # Domination
-                sub_style=8000,      # Precision
-                selected_perks=[
-                    8112,  # Electrocute (keystone)
-                    8143,  # Sudden Impact
-                    8138,  # Eyeball Collection
-                    8135,  # Treasure Hunter
-                    8009,  # Presence of Mind
-                    8014,  # Coup de Grace
-                    5008,  # Adaptive Force (shard 1)
-                    5008,  # Adaptive Force (shard 2)
-                    5002   # Armor (shard 3)
-                ]
-            )
+            if ssr_data_match:
+                print("DEBUG: Found window.__SSR_DATA__")
+                ssr_data_str = ssr_data_match.group(1)
 
-            sample_items = ItemBuild(
-                starting_items=[1056, 2003, 2003],  # Doran's Ring + 2 Health Pots
-                core_items=[3020, 6653, 3135],       # Sorcerer's Shoes, Luden's, Void Staff
-                situational_items=[3157, 3165, 3089] # Zhonya's, Morello, Rabadon's
-            )
+                try:
+                    ssr_data = json.loads(ssr_data_str)
+                    print("DEBUG: Successfully parsed SSR data")
 
-            return BuildData(
-                runes=sample_runes,
-                items=sample_items,
-                summoner_spells=[4, 14]  # Flash + Ignite
-            )
+                    # Navigate the data structure to find rune recommendations
+                    # The structure varies, so we'll look for common patterns
+                    runes = self._extract_runes_from_ssr(ssr_data)
+                    items = self._extract_items_from_ssr(ssr_data)
+
+                    if runes:
+                        print("DEBUG: Successfully extracted runes from SSR data")
+                        return BuildData(
+                            runes=runes,
+                            items=items or self._get_fallback_items(),
+                            summoner_spells=[4, 14]  # Flash + most common spell
+                        )
+
+                except json.JSONDecodeError as e:
+                    print(f"DEBUG: JSON parse error: {e}")
+
+            # Fallback: Try to find data in other script tags or use sample data
+            print("DEBUG: Could not extract real data, using fallback sample runes")
+            return self._get_fallback_build()
 
         except Exception as e:
             print(f"HTML parsing error: {e}")
+            import traceback
+            traceback.print_exc()
+            return self._get_fallback_build()
+
+    def _extract_runes_from_ssr(self, ssr_data: dict) -> Optional[RuneData]:
+        """Extract rune data from SSR data structure"""
+        try:
+            # U.GG's structure can vary, look for common patterns
+            # Typically nested in data -> ranked_stats or similar
+
+            # Try to find rune data in the structure
+            for key, value in ssr_data.items():
+                if isinstance(value, dict):
+                    data = value.get('data', {})
+
+                    # Look for rune recommendations
+                    if 'runes' in str(data).lower() or 'perks' in str(data).lower():
+                        # Try to extract perk IDs
+                        # This is a simplified extraction - actual structure may vary
+                        return self._parse_rune_data(data)
+
             return None
+
+        except Exception as e:
+            print(f"DEBUG: Error extracting runes: {e}")
+            return None
+
+    def _parse_rune_data(self, data: dict) -> Optional[RuneData]:
+        """Parse rune data from the data structure"""
+        # This is a placeholder - actual implementation depends on data structure
+        # For now, return None to trigger fallback
+        return None
+
+    def _extract_items_from_ssr(self, ssr_data: dict) -> Optional[ItemBuild]:
+        """Extract item build from SSR data structure"""
+        # Placeholder - will implement after testing rune extraction
+        return None
+
+    def _get_fallback_items(self) -> ItemBuild:
+        """Get fallback item build"""
+        return ItemBuild(
+            starting_items=[1056, 2003, 2003],
+            core_items=[3020, 6653, 3135],
+            situational_items=[3157, 3165, 3089]
+        )
+
+    def _get_fallback_build(self) -> BuildData:
+        """Get complete fallback build data"""
+        sample_runes = RuneData(
+            primary_style=8100,  # Domination
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8112,  # Electrocute (keystone)
+                8143,  # Sudden Impact
+                8138,  # Eyeball Collection
+                8135,  # Treasure Hunter
+                8009,  # Presence of Mind
+                8014,  # Coup de Grace
+                5008,  # Adaptive Force (shard 1)
+                5008,  # Adaptive Force (shard 2)
+                5002   # Armor (shard 3)
+            ]
+        )
+
+        return BuildData(
+            runes=sample_runes,
+            items=self._get_fallback_items(),
+            summoner_spells=[4, 14]
+        )
