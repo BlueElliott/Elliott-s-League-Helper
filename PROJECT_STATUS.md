@@ -1,7 +1,8 @@
 # Elliott's League Helper - Project Status
 
-**Last Updated:** January 31, 2026
+**Last Updated:** February 16, 2026
 **Repository:** https://github.com/BlueElliott/Elliott-s-League-Helper
+**Current Patch:** 16.3.1
 
 ---
 
@@ -53,40 +54,43 @@ A lightweight, ad-free League of Legends companion app that automatically import
 
 ---
 
-## ✅ FIXED: Data Provider Now Working!
+## ⚠️ PARTIAL: Data Provider Working with Issues
 
-### The Solution
-Created **web scraper provider** that accesses U.GG's website HTML instead of blocked API.
+### Current Solution
+**Champion-Specific Builds:** [src/providers/champion_builds.py](src/providers/champion_builds.py)
+- ✅ 20 champions with custom rune configurations
+- ✅ Role-specific item builds
+- ✅ Champion-specific summoner spells
+- ✅ Runes apply successfully to League client
+- ⚠️  Rune pages incomplete (some components missing)
+- ⚠️  Limited champion coverage (20/169 champions)
 
-```
-URL: https://u.gg/lol/champions/sejuani/build?role=jungle
-Response: 200 OK
-Status: Successfully retrieving build data
-```
-
-**New Provider:** [src/providers/ugg_scraper.py](src/providers/ugg_scraper.py)
-- ✅ Successfully connects to U.GG website
-- ✅ Retrieves HTML pages (200 OK)
-- ✅ Returns rune/item build data
-- ⚠️  Currently using sample runes for testing (HTML parsing to be fully implemented)
-
-### What Works Now
+**Web Scraper:** [src/providers/ugg_scraper.py](src/providers/ugg_scraper.py)
+- ✅ Successfully connects to U.GG website (200 OK)
 - ✅ Champion ID to name mapping (90+ champions)
-- ✅ Web scraping bypasses 403 errors
-- ✅ Build data structure ready
-- ✅ Test script created ([test_provider.py](test_provider.py))
+- ❌ HTML parsing not extracting real rune data yet
+- ❌ Falls back to champion_builds.py for all champions
 
-### Old Problem (RESOLVED)
-```
-URL: https://stats2.u.gg/lol/1.5/overview/14_1/ranked_solo_5x5/20/middle/1.5.0.json
-Response: 403 Access Denied - API endpoint blocked
-Solution: Switched to web scraping instead
-```
+### Champion Coverage (20/169)
+**Mages:** Ahri, Anivia, Lux
+**Tanks/Junglers:** Zac, Amumu, Nunu
+**Fighters:** Aatrox, Jax, Darius
+**Assassins:** Zed, Kha'Zix, Akali
+**ADCs:** Jinx, Ashe, Caitlyn, Akshan
+**Supports:** Thresh, Lulu, Soraka
+**Fallback:** Generic Conqueror build for unknown champions
+
+### Known Issues
+1. **Rune pages incomplete** - Missing some rune components when applied
+2. **Invalid rune IDs** - Some IDs may be outdated for patch 16.3.1
+3. **No real U.GG parsing** - Always uses hardcoded builds
+4. **Limited coverage** - Only 20 champions have custom builds
 
 ### Next Steps
-1. **Implement full HTML parsing** to extract actual runes from U.GG pages
-2. **Test rune application** with League client running
-3. **Add caching** to reduce web requests
+1. **Fix rune validation** - Update IDs for current patch
+2. **Implement real U.GG HTML parsing** to extract live data
+3. **Expand champion builds** to 50+ champions
+4. **Add caching** to reduce web requests
 
 ---
 
@@ -112,13 +116,17 @@ Solution: Switched to web scraping instead
 - ❌ Source selection UI
 - ❌ Fallback logic when one source fails
 
-### Milestone 5: User Interface (60% Complete)
-- ✅ System tray icon (pystray)
-- ✅ Status indicators (green/red icon)
-- ✅ Visual feedback (tray notifications)
-- ✅ Start/Stop controls
+### Milestone 5: User Interface (75% Complete)
+- ✅ Visual GUI Window (tkinter) - 600x700px dark theme
+- ✅ Champion info display
+- ✅ Rune tree visualization
+- ✅ Apply Runes button
+- ✅ Status indicators
+- ✅ Hover detection (championPickIntent) for browsing builds
+- ✅ Role detection (ranked/normal games)
 - ❌ Settings window
-- ❌ Optional: Flask web UI
+- ❌ Rune/item icons display
+- ❌ Win rate / pick rate stats
 
 ---
 
@@ -228,38 +236,51 @@ python -u run.py
 
 ## 📊 Progress Summary
 
-**Overall Progress:** ~50% Complete
+**Overall Progress:** ~65% Complete
 
 | Milestone | Status | Completion |
 |-----------|--------|------------|
-| 1. MVP Core | 🟡 Partial | 80% (blocked by data) |
+| 1. MVP Core | 🟢 Working | 90% (rune validation issues) |
 | 2. Item Sets | 🟡 Partial | 50% |
 | 3. Caching | 🔴 Not Started | 0% |
 | 4. Multi-Source | 🔴 Not Started | 0% |
-| 5. UI/Polish | 🔴 Not Started | 0% |
+| 5. UI/Polish | 🟡 Partial | 75% |
 
-**Key Achievement:** The LCU integration is solid. Once data fetching works, runes will auto-apply.
+**Key Achievement:** App successfully applies runes with visual GUI! 20 champions have unique builds. Main blocker is rune ID validation for current patch.
 
 ---
 
 ## 🎯 Immediate Next Steps
 
-### Priority 1: Fix Data Fetching
-Choose one approach:
-1. **Web Scraping**: Scrape U.GG HTML using BeautifulSoup
-2. **Community Dragon**: Use https://raw.communitydragon.org
-3. **Alternative APIs**: Research other data sources
+### Priority 1: Fix Rune Validation (CRITICAL)
+**Issue:** Runes apply but are incomplete (missing components)
+**Solution:**
+1. Test in actual ranked/normal game (not just Practice Tool)
+2. Fetch valid rune IDs from Data Dragon for patch 16.3.1:
+   - `https://ddragon.leagueoflegends.com/cdn/16.3.1/data/en_US/runesReforged.json`
+3. Update all rune IDs in [src/providers/champion_builds.py](src/providers/champion_builds.py)
+4. Add logging to show which specific rune IDs fail
+5. Test with known-working champions (Ahri, Thresh, Jinx)
 
-### Priority 2: Test Rune Application
-Once data is available:
-1. Verify runes actually apply to client
-2. Test with multiple champions
-3. Confirm rune pages show up in-game
+### Priority 2: Implement Real U.GG Parsing
+**Goal:** Extract live rune data from U.GG instead of hardcoded builds
+**Approach:**
+1. Parse HTML to find rune names in image paths
+2. Create rune name → ID mapping from Data Dragon
+3. Extract build data from page DOM structure
+4. Cache results to reduce requests
 
-### Priority 3: Add Basic GUI
-- System tray icon
-- On/off toggle
-- Status indicator
+### Priority 3: Expand Champion Coverage
+**Current:** 20/169 champions (12%)
+**Target:** 50+ champions (30%)
+**Fastest Path:**
+- Add 30 more champions to champion_builds.py manually
+- OR implement U.GG parsing to get all champions automatically
+
+### Priority 4: Add Caching
+- SQLite database for build storage
+- Reduce web requests
+- Target <70ms response time
 
 ---
 
