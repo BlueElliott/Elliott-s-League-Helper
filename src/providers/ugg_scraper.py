@@ -223,7 +223,7 @@ class UGGScraperProvider(BaseProvider):
             selected_perks=[
                 8112,  # Electrocute (keystone)
                 8143,  # Sudden Impact
-                8138,  # Eyeball Collection
+                8120,  # Ghost Poro (changed from 8138 Eyeball Collection)
                 8135,  # Treasure Hunter
                 8009,  # Presence of Mind
                 8014,  # Coup de Grace
