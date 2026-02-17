@@ -4,10 +4,53 @@ Scrapes U.GG website HTML for build data since their API is not public
 """
 
 import aiohttp
+import re
+import json
 from typing import Optional, List
 from bs4 import BeautifulSoup
 from providers.base import BaseProvider, BuildData, RuneData, ItemBuild
 from providers.champion_builds import get_champion_build
+
+
+# Reverse map: folder name in icon path -> rune ID
+# Built from the complete Data Dragon 16.3.1 rune data
+RUNE_NAME_TO_ID = {
+    # Domination
+    "Electrocute": 8112, "DarkHarvest": 8128, "HailOfBlades": 9923,
+    "CheapShot": 8126, "TasteOfBlood": 8139, "SuddenImpact": 8143,
+    "SixthSense": 8137, "GrislyMementos": 8140, "DeepWard": 8141,
+    "TreasureHunter": 8135, "RelentlessHunter": 8105, "UltimateHunter": 8106,
+    # Inspiration
+    "GlacialAugment": 8351, "UnsealedSpellbook": 8360, "FirstStrike": 8369,
+    "HextechFlashtraption": 8306, "MagicalFootwear": 8304, "CashBack": 8321,
+    "TripleTonic": 8313, "TimeWarpTonic": 8352, "BiscuitDelivery": 8345,
+    "CosmicInsight": 8347, "ApproachVelocity": 8410, "JackOfAllTrades": 8316,
+    # Precision
+    "PressTheAttack": 8005, "LethalTempo": 8008, "FleetFootwork": 8021,
+    "Conqueror": 8010, "AbsorbLife": 9101, "Triumph": 9111,
+    "PresenceOfMind": 8009, "LegendAlacrity": 9104, "LegendHaste": 9105,
+    "LegendBloodline": 9103, "CoupDeGrace": 8014, "CutDown": 8017, "LastStand": 8299,
+    # Resolve
+    "GraspOfTheUndying": 8437, "VeteranAftershock": 8439, "Guardian": 8465,
+    "Demolish": 8446, "FontOfLife": 8463, "MirrorShell": 8401,
+    "Conditioning": 8429, "SecondWind": 8444, "BonePlating": 8473,
+    "Overgrowth": 8451, "Revitalize": 8453, "Unflinching": 8242,
+    # Sorcery
+    "SummonAery": 8214, "ArcaneComet": 8229, "PhaseRush": 8230,
+    "NullifyingOrb": 8224, "ManaflowBand": 8226, "NimbusCloak": 8275,
+    "Transcendence": 8210, "Celerity": 8234, "AbsoluteFocus": 8233,
+    "Scorch": 8237, "Waterwalking": 8232, "GatheringStorm": 8236,
+    # Stat shards (icon file names)
+    "StatModsAdaptiveForceIcon": 5008, "StatModsAttackSpeedIcon": 5005,
+    "StatModsCDRScalingIcon": 5007, "StatModsArmorIcon": 5002,
+    "StatModsMagicResIcon": 5003, "StatModsHealthScalingIcon": 5001,
+}
+
+# Tree name to style ID
+TREE_NAME_TO_ID = {
+    "Precision": 8000, "Domination": 8100, "Sorcery": 8200,
+    "Inspiration": 8300, "Resolve": 8400,
+}
 
 
 # Champion ID to name mapping (will expand this)
@@ -129,121 +172,166 @@ class UGGScraperProvider(BaseProvider):
 
     def _parse_html(self, html: str, champion_id: int, role: str) -> Optional[BuildData]:
         """
-        Parse U.GG HTML to extract runes and items from window.__SSR_DATA__
-
-        U.GG embeds build data as JSON in script tags via window.__SSR_DATA__
+        Parse U.GG HTML to extract runes and items.
+        Strategy: find rune icon image src paths which encode the rune name,
+        then map names -> IDs using our Data Dragon lookup table.
         """
         try:
-            import json
-            import re
+            runes = self._extract_runes_from_html(html)
+            items = self._extract_items_from_html(html)
 
-            # Extract window.__SSR_DATA__ from script tags
-            ssr_data_match = re.search(r'window\.__SSR_DATA__\s*=\s*({.+?});', html, re.DOTALL)
+            if runes:
+                print(f"DEBUG: Successfully extracted live runes from U.GG for champion {champion_id}")
+                from providers.champion_builds import _get_role_items
+                return BuildData(
+                    runes=runes,
+                    items=items or _get_role_items(role),
+                    summoner_spells=self._extract_summoner_spells(html, champion_id)
+                )
 
-            if ssr_data_match:
-                print("DEBUG: Found window.__SSR_DATA__")
-                ssr_data_str = ssr_data_match.group(1)
-
-                try:
-                    ssr_data = json.loads(ssr_data_str)
-                    print("DEBUG: Successfully parsed SSR data")
-
-                    # Navigate the data structure to find rune recommendations
-                    # The structure varies, so we'll look for common patterns
-                    runes = self._extract_runes_from_ssr(ssr_data)
-                    items = self._extract_items_from_ssr(ssr_data)
-
-                    if runes:
-                        print("DEBUG: Successfully extracted runes from SSR data")
-                        return BuildData(
-                            runes=runes,
-                            items=items or self._get_fallback_items(),
-                            summoner_spells=[4, 14]  # Flash + most common spell
-                        )
-
-                except json.JSONDecodeError as e:
-                    print(f"DEBUG: JSON parse error: {e}")
-
-            # Fallback: Use champion-specific build
             print(f"DEBUG: Using champion-specific fallback for champion {champion_id}")
             return get_champion_build(champion_id, role)
 
         except Exception as e:
             print(f"HTML parsing error: {e}")
-            import traceback
-            traceback.print_exc()
             return get_champion_build(champion_id, role)
 
-    def _extract_runes_from_ssr(self, ssr_data: dict) -> Optional[RuneData]:
-        """Extract rune data from SSR data structure"""
-        try:
-            # U.GG's structure can vary, look for common patterns
-            # Typically nested in data -> ranked_stats or similar
+    def _extract_runes_from_html(self, html: str) -> Optional[RuneData]:
+        """
+        Extract runes by parsing rune icon image paths.
+        U.GG includes rune icon URLs like:
+          .../perk-images/Styles/Domination/Electrocute/Electrocute.png
+        We read the tree names and rune folder names and map them to IDs.
+        """
+        # Find all rune-related image src attributes
+        perk_pattern = re.compile(
+            r'perk-images/Styles/(\w+)/(\w+)/[\w.]+\.png', re.IGNORECASE
+        )
+        stat_pattern = re.compile(
+            r'perk-images/StatMods/(StatMods\w+)(?:Icon)?(?:\.[\w]+)?\.png', re.IGNORECASE
+        )
 
-            # Try to find rune data in the structure
-            for key, value in ssr_data.items():
-                if isinstance(value, dict):
-                    data = value.get('data', {})
-
-                    # Look for rune recommendations
-                    if 'runes' in str(data).lower() or 'perks' in str(data).lower():
-                        # Try to extract perk IDs
-                        # This is a simplified extraction - actual structure may vary
-                        return self._parse_rune_data(data)
-
+        matches = perk_pattern.findall(html)
+        if not matches:
             return None
 
-        except Exception as e:
-            print(f"DEBUG: Error extracting runes: {e}")
+        # matches = list of (TreeName, RuneFolderName)
+        # First occurrence of each tree = keystone of that tree.
+        # We need to identify: primary tree, secondary tree, and stat shards.
+
+        trees_seen = {}      # tree_name -> list of rune IDs in order
+        primary_tree = None
+        sub_tree = None
+
+        for tree_name, rune_folder in matches:
+            if tree_name not in ("Precision", "Domination", "Sorcery", "Inspiration", "Resolve"):
+                continue
+            rune_id = RUNE_NAME_TO_ID.get(rune_folder)
+            if rune_id is None:
+                continue
+            if tree_name not in trees_seen:
+                trees_seen[tree_name] = []
+            trees_seen[tree_name].append(rune_id)
+
+        if not trees_seen:
             return None
 
-    def _parse_rune_data(self, data: dict) -> Optional[RuneData]:
-        """Parse rune data from the data structure"""
-        # This is a placeholder - actual implementation depends on data structure
-        # For now, return None to trigger fallback
-        return None
+        # Primary tree = the one with the most runes (4: keystone + 3 rows)
+        # Secondary tree = the one with 2 runes
+        sorted_trees = sorted(trees_seen.items(), key=lambda x: len(x[1]), reverse=True)
 
-    def _extract_items_from_ssr(self, ssr_data: dict) -> Optional[ItemBuild]:
-        """Extract item build from SSR data structure"""
-        # Placeholder - will implement after testing rune extraction
-        return None
+        if len(sorted_trees) < 2:
+            return None
 
-    def _get_fallback_items(self) -> ItemBuild:
-        """Get fallback item build"""
+        primary_tree_name, primary_runes = sorted_trees[0]
+        sub_tree_name, sub_runes = sorted_trees[1]
+
+        # Ensure correct count
+        primary_runes = primary_runes[:4]
+        sub_runes = sub_runes[:2]
+
+        if len(primary_runes) < 4 or len(sub_runes) < 2:
+            return None
+
+        # Extract stat shards
+        stat_matches = stat_pattern.findall(html)
+        shard_ids = []
+        for match in stat_matches:
+            shard_id = RUNE_NAME_TO_ID.get(match) or RUNE_NAME_TO_ID.get(match + "Icon")
+            if shard_id and shard_id not in shard_ids:
+                shard_ids.append(shard_id)
+        # Pad to 3 shards if needed
+        while len(shard_ids) < 3:
+            shard_ids.append(5008)  # Adaptive Force default
+        shard_ids = shard_ids[:3]
+
+        selected_perks = primary_runes + sub_runes + shard_ids
+
+        return RuneData(
+            primary_style=TREE_NAME_TO_ID[primary_tree_name],
+            sub_style=TREE_NAME_TO_ID[sub_tree_name],
+            selected_perks=selected_perks
+        )
+
+    def _extract_items_from_html(self, html: str) -> Optional[ItemBuild]:
+        """
+        Extract recommended items by parsing item icon image paths.
+        U.GG uses img src like: /cdn/16.x.x/img/item/3020.png
+        """
+        item_pattern = re.compile(r'/img/item/(\d{4,5})\.png')
+        item_ids = []
+        seen = set()
+        for match in item_pattern.finditer(html):
+            item_id = int(match.group(1))
+            # Filter out consumables and wards
+            if item_id not in seen and item_id > 1000 and item_id not in (2003, 2055, 3340, 3364):
+                seen.add(item_id)
+                item_ids.append(item_id)
+
+        if len(item_ids) < 3:
+            return None
+
         return ItemBuild(
-            starting_items=[1056, 2003, 2003],
-            core_items=[3020, 6653, 3135],
-            situational_items=[3157, 3165, 3089]
+            starting_items=item_ids[:2],
+            core_items=item_ids[2:5],
+            situational_items=item_ids[5:8] if len(item_ids) >= 8 else item_ids[5:]
         )
 
-    def _get_fallback_build(self) -> BuildData:
-        """Get complete fallback build data"""
-        sample_runes = RuneData(
-            primary_style=8100,  # Domination
-            sub_style=8000,      # Precision
-            selected_perks=[
-                8112,  # Electrocute (keystone)
-                8143,  # Sudden Impact
-                8120,  # Ghost Poro (changed from 8138 Eyeball Collection)
-                8135,  # Treasure Hunter
-                8009,  # Presence of Mind
-                8014,  # Coup de Grace
-                5008,  # Adaptive Force (shard 1)
-                5008,  # Adaptive Force (shard 2)
-                5002   # Armor (shard 3)
-            ]
-        )
+    def _extract_summoner_spells(self, html: str, champion_id: int) -> List[int]:
+        """Extract summoner spells from page, fallback to champion default"""
+        from providers.champion_builds import CHAMPION_BUILDS
+        # Spell icon pattern: SummonerFlash.png, SummonerDot.png etc.
+        spell_map = {
+            "SummonerFlash": 4, "SummonerDot": 14, "SummonerHaste": 6,
+            "SummonerHeal": 7, "SummonerExhaust": 3, "SummonerSmite": 11,
+            "SummonerTeleport": 12, "SummonerBoost": 1, "SummonerBarrier": 21,
+        }
+        spell_pattern = re.compile(r'(Summoner\w+)\.png')
+        found = []
+        seen = set()
+        for match in spell_pattern.finditer(html):
+            name = match.group(1)
+            if name in spell_map and name not in seen:
+                seen.add(name)
+                found.append(spell_map[name])
+            if len(found) == 2:
+                return found
 
-        return BuildData(
-            runes=sample_runes,
-            items=self._get_fallback_items(),
-            summoner_spells=[4, 14]
-        )
+        # Fall back to champion-specific or default
+        if champion_id in CHAMPION_BUILDS:
+            return CHAMPION_BUILDS[champion_id].get('summoner_spells', [4, 14])
+        return [4, 14]
 
     async def get_current_patch(self) -> Optional[str]:
-        """
-        Get current patch version
-        Returns a default patch for now
-        """
-        # TODO: Fetch actual current patch from Riot API or Data Dragon
-        return "14_1"
+        """Get current patch from Data Dragon"""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    "https://ddragon.leagueoflegends.com/api/versions.json", timeout=aiohttp.ClientTimeout(total=5)
+                ) as resp:
+                    if resp.status == 200:
+                        versions = await resp.json()
+                        return versions[0]  # Latest patch
+        except Exception:
+            pass
+        return "16.3.1"
