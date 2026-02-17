@@ -76,20 +76,28 @@ class VisualLeagueHelper:
         except Exception as e:
             print(f"Could not get patch: {e}")
 
-        # Setup WebSocket
-        self.websocket = LCUWebSocket(self.connector.port, self.connector.token)
-        if await self.websocket.connect():
-            print("[OK] WebSocket connected")
-
-            # Register event handler
-            self.websocket.on('/lol-champ-select/v1/session', self.on_champion_select)
-
-            # Start listening
-            self.running = True
-            print("Listening for champion selections...")
-            self.gui.update_status("Waiting for champion selection...", 'white')
-
-            await self.websocket.listen()
+        # WebSocket loop with auto-reconnect
+        self.running = True
+        while self.running:
+            try:
+                self.websocket = LCUWebSocket(self.connector.port, self.connector.token)
+                if await self.websocket.connect():
+                    print("[OK] WebSocket connected")
+                    self._last_champion = None  # Reset on reconnect
+                    self.websocket.on('/lol-champ-select/v1/session', self.on_champion_select)
+                    print("Listening for champion selections...")
+                    self.gui.update_status("Waiting for champion selection...", 'white')
+                    await self.websocket.listen()  # Blocks until connection drops
+                    print("[WARN] WebSocket disconnected, reconnecting in 3s...")
+                    self.gui.update_status("Reconnecting...", '#ffd93d')
+                else:
+                    print("[WARN] WebSocket failed to connect, retrying in 5s...")
+                    self.gui.update_status("Reconnecting to League client...", '#ffd93d')
+                await asyncio.sleep(3)
+            except Exception as e:
+                print(f"[WARN] WebSocket error: {e}, reconnecting in 5s...")
+                self.gui.update_status("Reconnecting...", '#ffd93d')
+                await asyncio.sleep(5)
 
     async def stop(self):
         """Stop the application"""
@@ -145,14 +153,14 @@ class VisualLeagueHelper:
 
     async def process_champion_selection(self, champion_id: int, role: str):
         """Process champion selection and display builds"""
-        champion_name = CHAMPION_NAMES.get(champion_id, f"Champion{champion_id}")
+        from providers.champion_builds import CHAMPION_BUILDS
+        champion_name = CHAMPION_NAMES.get(champion_id, f"Unknown ({champion_id})")
 
         # Handle practice tool / no-role modes
         if not role or role == '':
-            role = 'top'  # Default for practice tool
+            role = 'top'
             print(f"[INFO] No role detected (Practice Tool?), using default: {role}")
 
-        # Store for apply function
         self._current_champion_name = champion_name
         self._current_role = role
 
@@ -162,7 +170,6 @@ class VisualLeagueHelper:
 
         self.gui.update_status(f"Fetching {champion_name} build...", '#ffd93d')
 
-        # Fetch build data
         print("Fetching build data from U.GG...")
         build_data = await self.provider.get_build(champion_id, role, self.current_patch)
 
@@ -173,9 +180,16 @@ class VisualLeagueHelper:
 
         print("[OK] Build data retrieved")
 
-        # Display in GUI
+        # Show a note if using generic build (champion not in custom db)
+        is_known = champion_id in CHAMPION_BUILDS
+        source_note = "U.GG" if is_known else "Generic (no custom build)"
         self.gui.display_build(champion_name, role, build_data)
-        self.gui.update_status(f"{champion_name} build ready - Click 'Apply Runes'", '#4ecca3')
+        self.gui.update_status(
+            f"{champion_name} | {source_note} | Click Apply Runes",
+            '#4ecca3' if is_known else '#ffd93d'
+        )
+        if not is_known:
+            print(f"[INFO] {champion_name} not in custom builds, using generic Conqueror")
 
         print()
 
