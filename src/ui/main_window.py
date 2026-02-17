@@ -13,24 +13,109 @@ import requests
 from functools import lru_cache
 
 
-# Rune tree names and colors
+# Rune tree names, colors, and icons
 RUNE_TREES = {
-    8000: ("Precision", "#C8AA6E"),
-    8100: ("Domination", "#DC354A"),
-    8200: ("Sorcery", "#5E9BE0"),
-    8300: ("Inspiration", "#49AAB9"),
-    8400: ("Resolve", "#00A550")
+    8000: ("Precision",   "#C8AA6E", "perk-images/Styles/7201_Precision.png"),
+    8100: ("Domination",  "#DC354A", "perk-images/Styles/7200_Domination.png"),
+    8200: ("Sorcery",     "#5E9BE0", "perk-images/Styles/7202_Sorcery.png"),
+    8300: ("Inspiration", "#49AAB9", "perk-images/Styles/7203_Whimsy.png"),
+    8400: ("Resolve",     "#00A550", "perk-images/Styles/7204_Resolve.png"),
 }
 
-# Summoner spell names
+# Complete rune ID -> (name, icon_path) mapping from Data Dragon 16.3.1
+RUNE_DATA = {
+    # Domination
+    8112: ("Electrocute",       "perk-images/Styles/Domination/Electrocute/Electrocute.png"),
+    8128: ("Dark Harvest",      "perk-images/Styles/Domination/DarkHarvest/DarkHarvest.png"),
+    9923: ("Hail of Blades",    "perk-images/Styles/Domination/HailOfBlades/HailOfBlades.png"),
+    8126: ("Cheap Shot",        "perk-images/Styles/Domination/CheapShot/CheapShot.png"),
+    8139: ("Taste of Blood",    "perk-images/Styles/Domination/TasteOfBlood/GreenTerror_TasteOfBlood.png"),
+    8143: ("Sudden Impact",     "perk-images/Styles/Domination/SuddenImpact/SuddenImpact.png"),
+    8137: ("Sixth Sense",       "perk-images/Styles/Domination/SixthSense/SixthSense.png"),
+    8140: ("Grisly Mementos",   "perk-images/Styles/Domination/GrislyMementos/GrislyMementos.png"),
+    8141: ("Deep Ward",         "perk-images/Styles/Domination/DeepWard/DeepWard.png"),
+    8135: ("Treasure Hunter",   "perk-images/Styles/Domination/TreasureHunter/TreasureHunter.png"),
+    8105: ("Relentless Hunter", "perk-images/Styles/Domination/RelentlessHunter/RelentlessHunter.png"),
+    8106: ("Ultimate Hunter",   "perk-images/Styles/Domination/UltimateHunter/UltimateHunter.png"),
+    # Inspiration
+    8351: ("Glacial Augment",   "perk-images/Styles/Inspiration/GlacialAugment/GlacialAugment.png"),
+    8360: ("Unsealed Spellbook","perk-images/Styles/Inspiration/UnsealedSpellbook/UnsealedSpellbook.png"),
+    8369: ("First Strike",      "perk-images/Styles/Inspiration/FirstStrike/FirstStrike.png"),
+    8306: ("Hextech Flash",     "perk-images/Styles/Inspiration/HextechFlashtraption/HextechFlashtraption.png"),
+    8304: ("Magical Footwear",  "perk-images/Styles/Inspiration/MagicalFootwear/MagicalFootwear.png"),
+    8321: ("Cash Back",         "perk-images/Styles/Inspiration/CashBack/CashBack2.png"),
+    8313: ("Triple Tonic",      "perk-images/Styles/Inspiration/PerfectTiming/AlchemistCabinet.png"),
+    8352: ("Time Warp Tonic",   "perk-images/Styles/Inspiration/TimeWarpTonic/TimeWarpTonic.png"),
+    8345: ("Biscuit Delivery",  "perk-images/Styles/Inspiration/BiscuitDelivery/BiscuitDelivery.png"),
+    8347: ("Cosmic Insight",    "perk-images/Styles/Inspiration/CosmicInsight/CosmicInsight.png"),
+    8410: ("Approach Velocity", "perk-images/Styles/Resolve/ApproachVelocity/ApproachVelocity.png"),
+    8316: ("Jack of All Trades","perk-images/Styles/Inspiration/JackOfAllTrades/JackofAllTrades2.png"),
+    # Precision
+    8005: ("Press the Attack",  "perk-images/Styles/Precision/PressTheAttack/PressTheAttack.png"),
+    8008: ("Lethal Tempo",      "perk-images/Styles/Precision/LethalTempo/LethalTempoTemp.png"),
+    8021: ("Fleet Footwork",    "perk-images/Styles/Precision/FleetFootwork/FleetFootwork.png"),
+    8010: ("Conqueror",         "perk-images/Styles/Precision/Conqueror/Conqueror.png"),
+    9101: ("Absorb Life",       "perk-images/Styles/Precision/AbsorbLife/AbsorbLife.png"),
+    9111: ("Triumph",           "perk-images/Styles/Precision/Triumph.png"),
+    8009: ("Presence of Mind",  "perk-images/Styles/Precision/PresenceOfMind/PresenceOfMind.png"),
+    9104: ("Legend: Alacrity",  "perk-images/Styles/Precision/LegendAlacrity/LegendAlacrity.png"),
+    9105: ("Legend: Haste",     "perk-images/Styles/Precision/LegendHaste/LegendHaste.png"),
+    9103: ("Legend: Bloodline", "perk-images/Styles/Precision/LegendBloodline/LegendBloodline.png"),
+    8014: ("Coup de Grace",     "perk-images/Styles/Precision/CoupDeGrace/CoupDeGrace.png"),
+    8017: ("Cut Down",          "perk-images/Styles/Precision/CutDown/CutDown.png"),
+    8299: ("Last Stand",        "perk-images/Styles/Sorcery/LastStand/LastStand.png"),
+    # Resolve
+    8437: ("Grasp of the Undying","perk-images/Styles/Resolve/GraspOfTheUndying/GraspOfTheUndying.png"),
+    8439: ("Aftershock",        "perk-images/Styles/Resolve/VeteranAftershock/VeteranAftershock.png"),
+    8465: ("Guardian",          "perk-images/Styles/Resolve/Guardian/Guardian.png"),
+    8446: ("Demolish",          "perk-images/Styles/Resolve/Demolish/Demolish.png"),
+    8463: ("Font of Life",      "perk-images/Styles/Resolve/FontOfLife/FontOfLife.png"),
+    8401: ("Shield Bash",       "perk-images/Styles/Resolve/MirrorShell/MirrorShell.png"),
+    8429: ("Conditioning",      "perk-images/Styles/Resolve/Conditioning/Conditioning.png"),
+    8444: ("Second Wind",       "perk-images/Styles/Resolve/SecondWind/SecondWind.png"),
+    8473: ("Bone Plating",      "perk-images/Styles/Resolve/BonePlating/BonePlating.png"),
+    8451: ("Overgrowth",        "perk-images/Styles/Resolve/Overgrowth/Overgrowth.png"),
+    8453: ("Revitalize",        "perk-images/Styles/Resolve/Revitalize/Revitalize.png"),
+    8242: ("Unflinching",       "perk-images/Styles/Sorcery/Unflinching/Unflinching.png"),
+    # Sorcery
+    8214: ("Summon Aery",       "perk-images/Styles/Sorcery/SummonAery/SummonAery.png"),
+    8229: ("Arcane Comet",      "perk-images/Styles/Sorcery/ArcaneComet/ArcaneComet.png"),
+    8230: ("Phase Rush",        "perk-images/Styles/Sorcery/PhaseRush/PhaseRush.png"),
+    8224: ("Axiom Arcanist",    "perk-images/Styles/Sorcery/NullifyingOrb/Axiom_Arcanist.png"),
+    8226: ("Manaflow Band",     "perk-images/Styles/Sorcery/ManaflowBand/ManaflowBand.png"),
+    8275: ("Nimbus Cloak",      "perk-images/Styles/Sorcery/NimbusCloak/6361.png"),
+    8210: ("Transcendence",     "perk-images/Styles/Sorcery/Transcendence/Transcendence.png"),
+    8234: ("Celerity",          "perk-images/Styles/Sorcery/Celerity/CelerityTemp.png"),
+    8233: ("Absolute Focus",    "perk-images/Styles/Sorcery/AbsoluteFocus/AbsoluteFocus.png"),
+    8237: ("Scorch",            "perk-images/Styles/Sorcery/Scorch/Scorch.png"),
+    8232: ("Waterwalking",      "perk-images/Styles/Sorcery/Waterwalking/Waterwalking.png"),
+    8236: ("Gathering Storm",   "perk-images/Styles/Sorcery/GatheringStorm/GatheringStorm.png"),
+    # Stat shards
+    5008: ("Adaptive Force",    "perk-images/StatMods/StatModsAdaptiveForceIcon.png"),
+    5005: ("Attack Speed",      "perk-images/StatMods/StatModsAttackSpeedIcon.png"),
+    5007: ("Ability Haste",     "perk-images/StatMods/StatModsCDRScalingIcon.png"),
+    5002: ("Armor",             "perk-images/StatMods/StatModsArmorIcon.png"),
+    5003: ("Magic Resist",      "perk-images/StatMods/StatModsMagicResIcon.MagicResist.png"),
+    5001: ("Health",            "perk-images/StatMods/StatModsHealthScalingIcon.png"),
+}
+
+# Summoner spell names and icons
 SUMMONER_SPELLS = {
-    1: "Cleanse", 3: "Exhaust", 4: "Flash", 6: "Ghost", 7: "Heal",
-    11: "Smite", 12: "Teleport", 13: "Clarity", 14: "Ignite", 21: "Barrier"
+    1:  ("Cleanse",   "SummonerBoost.png"),
+    3:  ("Exhaust",   "SummonerExhaust.png"),
+    4:  ("Flash",     "SummonerFlash.png"),
+    6:  ("Ghost",     "SummonerHaste.png"),
+    7:  ("Heal",      "SummonerHeal.png"),
+    11: ("Smite",     "SummonerSmite.png"),
+    12: ("Teleport",  "SummonerTeleport.png"),
+    13: ("Clarity",   "SummonerMana.png"),
+    14: ("Ignite",    "SummonerDot.png"),
+    21: ("Barrier",   "SummonerBarrier.png"),
 }
 
-# CDN URL for assets
+# CDN base URLs
 DDRAGON_VERSION = "16.3.1"
-RUNE_CDN = f"https://ddragon.leagueoflegends.com/cdn/img/"
+DDRAGON_IMG = "https://ddragon.leagueoflegends.com/cdn/img/"
 ITEM_CDN = f"https://ddragon.leagueoflegends.com/cdn/{DDRAGON_VERSION}/img/item/"
 SPELL_CDN = f"https://ddragon.leagueoflegends.com/cdn/{DDRAGON_VERSION}/img/spell/"
 
@@ -192,139 +277,108 @@ class RuneDisplayWindow:
 
     def _display_runes(self, runes):
         """Display runes visually with icons"""
-        primary_tree, primary_color = RUNE_TREES.get(runes.primary_style, ("Unknown", "#888888"))
-        sub_tree, sub_color = RUNE_TREES.get(runes.sub_style, ("Unknown", "#888888"))
+        primary_info = RUNE_TREES.get(runes.primary_style, ("Unknown", "#888888", ""))
+        sub_info = RUNE_TREES.get(runes.sub_style, ("Unknown", "#888888", ""))
+        primary_tree, primary_color, primary_icon = primary_info
+        sub_tree, sub_color, sub_icon = sub_info
 
-        # Primary tree header
-        primary_header = tk.Frame(self.runes_container, bg='#0a0e27')
-        primary_header.pack(fill='x', pady=(0, 10))
+        # Primary tree header with icon
+        self._make_section_header(self.runes_container, f"PRIMARY  {primary_tree}", primary_color, primary_icon)
 
-        tk.Label(
-            primary_header,
-            text=f"PRIMARY: {primary_tree}",
-            font=('Segoe UI', 12, 'bold'),
-            fg=primary_color,
-            bg='#0a0e27'
-        ).pack(anchor='w')
-
-        # Primary runes grid
         primary_frame = tk.Frame(self.runes_container, bg='#16213e', relief='solid', bd=1)
         primary_frame.pack(fill='x', pady=5)
 
-        # Keystone (larger)
-        keystone_frame = tk.Frame(primary_frame, bg='#16213e')
-        keystone_frame.pack(pady=10)
+        # Keystone row
+        keystone_row = tk.Frame(primary_frame, bg='#16213e')
+        keystone_row.pack(pady=12)
+        self._create_rune_icon(keystone_row, runes.selected_perks[0], size=(64, 64), is_keystone=True)
 
-        self._create_rune_icon(keystone_frame, runes.selected_perks[0], size=(64, 64), is_keystone=True)
-
-        # Primary perks (3 runes)
-        perks_frame = tk.Frame(primary_frame, bg='#16213e')
-        perks_frame.pack(pady=10)
-
+        # Primary rows 2-4
+        perks_row = tk.Frame(primary_frame, bg='#16213e')
+        perks_row.pack(pady=10)
         for i in range(1, 4):
-            self._create_rune_icon(perks_frame, runes.selected_perks[i], size=(48, 48))
+            self._create_rune_icon(perks_row, runes.selected_perks[i], size=(44, 44))
 
-        # Secondary tree header
-        secondary_header = tk.Frame(self.runes_container, bg='#0a0e27')
-        secondary_header.pack(fill='x', pady=(15, 10))
+        # Secondary tree header with icon
+        self._make_section_header(self.runes_container, f"SECONDARY  {sub_tree}", sub_color, sub_icon, top_pad=15)
 
-        tk.Label(
-            secondary_header,
-            text=f"SECONDARY: {sub_tree}",
-            font=('Segoe UI', 12, 'bold'),
-            fg=sub_color,
-            bg='#0a0e27'
-        ).pack(anchor='w')
-
-        # Secondary runes grid
         secondary_frame = tk.Frame(self.runes_container, bg='#16213e', relief='solid', bd=1)
         secondary_frame.pack(fill='x', pady=5)
 
-        sec_perks_frame = tk.Frame(secondary_frame, bg='#16213e')
-        sec_perks_frame.pack(pady=10)
-
+        sec_row = tk.Frame(secondary_frame, bg='#16213e')
+        sec_row.pack(pady=10)
         for i in range(4, 6):
-            self._create_rune_icon(sec_perks_frame, runes.selected_perks[i], size=(48, 48))
+            self._create_rune_icon(sec_row, runes.selected_perks[i], size=(44, 44))
 
         # Stat shards header
-        shards_header = tk.Frame(self.runes_container, bg='#0a0e27')
-        shards_header.pack(fill='x', pady=(15, 10))
+        self._make_section_header(self.runes_container, "STAT SHARDS", "#C8AA6E", top_pad=15)
 
-        tk.Label(
-            shards_header,
-            text="STAT SHARDS",
-            font=('Segoe UI', 12, 'bold'),
-            fg='#C8AA6E',
-            bg='#0a0e27'
-        ).pack(anchor='w')
-
-        # Stat shards
         shards_frame = tk.Frame(self.runes_container, bg='#16213e', relief='solid', bd=1)
         shards_frame.pack(fill='x', pady=5)
 
         shards_row = tk.Frame(shards_frame, bg='#16213e')
         shards_row.pack(pady=10)
-
         for i in range(6, 9):
             if i < len(runes.selected_perks):
-                self._create_stat_shard(shards_row, runes.selected_perks[i])
+                self._create_rune_icon(shards_row, runes.selected_perks[i], size=(36, 36), is_shard=True)
 
-    def _create_rune_icon(self, parent, perk_id: int, size: tuple = (48, 48), is_keystone: bool = False):
-        """Create a rune icon"""
-        frame = tk.Frame(parent, bg='#16213e')
-        frame.pack(side='left', padx=5)
+    def _make_section_header(self, parent, text: str, color: str, icon_path: str = "", top_pad: int = 0):
+        """Create a section header with optional icon"""
+        header = tk.Frame(parent, bg='#0a0e27')
+        header.pack(fill='x', pady=(top_pad, 6))
 
-        # Try to load rune icon from CDN
-        # Note: This is a simplified approach - real implementation would need proper rune ID to icon mapping
-        placeholder = tk.Label(
+        if icon_path:
+            url = DDRAGON_IMG + icon_path
+            img = fetch_image(url, size=(24, 24))
+            if img:
+                self.image_refs.append(img)
+                tk.Label(header, image=img, bg='#0a0e27').pack(side='left', padx=(0, 6))
+
+        tk.Label(
+            header,
+            text=text,
+            font=('Segoe UI', 11, 'bold'),
+            fg=color,
+            bg='#0a0e27'
+        ).pack(side='left', anchor='w')
+
+    def _create_rune_icon(self, parent, perk_id: int, size: tuple = (44, 44),
+                          is_keystone: bool = False, is_shard: bool = False):
+        """Create a rune icon fetched from Data Dragon"""
+        bg = '#16213e'
+        frame = tk.Frame(parent, bg=bg)
+        frame.pack(side='left', padx=8 if is_keystone else 5)
+
+        rune_name, icon_path = RUNE_DATA.get(perk_id, (str(perk_id), ""))
+
+        if icon_path:
+            url = DDRAGON_IMG + icon_path
+            img = fetch_image(url, size=size)
+            if img:
+                self.image_refs.append(img)
+                border_color = '#FFD700' if is_keystone else ('#C8AA6E' if is_shard else '#555577')
+                lbl = tk.Label(frame, image=img, bg=bg, bd=2, relief='solid',
+                               highlightbackground=border_color, highlightthickness=1)
+                lbl.pack()
+                tk.Label(frame, text=rune_name, font=('Segoe UI', 7),
+                         fg='#aaaacc', bg=bg, wraplength=size[0]+10).pack()
+                return
+
+        # Fallback text label
+        tk.Label(
             frame,
-            text=str(perk_id),
-            font=('Segoe UI', 8 if not is_keystone else 10),
-            fg='white',
+            text=rune_name,
+            font=('Segoe UI', 8, 'bold' if is_keystone else 'normal'),
+            fg='#FFD700' if is_keystone else '#aaaacc',
             bg='#2a2a4e',
-            width=size[0]//8,
-            height=size[1]//16,
-            relief='solid',
-            bd=1
-        )
-        placeholder.pack()
-
-    def _create_stat_shard(self, parent, shard_id: int):
-        """Create a stat shard icon"""
-        shard_names = {
-            5008: "AF", 5005: "AS", 5007: "AH",
-            5002: "ARM", 5003: "MR", 5001: "HP"
-        }
-
-        frame = tk.Frame(parent, bg='#16213e')
-        frame.pack(side='left', padx=5)
-
-        label = tk.Label(
-            frame,
-            text=shard_names.get(shard_id, str(shard_id)),
-            font=('Segoe UI', 10, 'bold'),
-            fg='#C8AA6E',
-            bg='#2a2a4e',
-            width=4,
-            height=2,
-            relief='solid',
-            bd=1
-        )
-        label.pack()
+            width=size[0] // 8,
+            height=size[1] // 16,
+            relief='solid', bd=1, wraplength=60
+        ).pack()
 
     def _display_items(self, items):
         """Display items visually with icons"""
-        # Items header
-        items_header = tk.Frame(self.items_container, bg='#0a0e27')
-        items_header.pack(fill='x', pady=(15, 10))
-
-        tk.Label(
-            items_header,
-            text="RECOMMENDED ITEMS",
-            font=('Segoe UI', 12, 'bold'),
-            fg='#4ecca3',
-            bg='#0a0e27'
-        ).pack(anchor='w')
+        self._make_section_header(self.items_container, "RECOMMENDED ITEMS", "#4ecca3", top_pad=15)
 
         items_frame = tk.Frame(self.items_container, bg='#16213e', relief='solid', bd=1)
         items_frame.pack(fill='x', pady=5, padx=0)
@@ -385,17 +439,8 @@ class RuneDisplayWindow:
         label.pack(side='left', padx=2)
 
     def _display_summoner_spells(self, spell_ids: list):
-        """Display summoner spells"""
-        spells_header = tk.Frame(self.items_container, bg='#0a0e27')
-        spells_header.pack(fill='x', pady=(15, 10))
-
-        tk.Label(
-            spells_header,
-            text="SUMMONER SPELLS",
-            font=('Segoe UI', 12, 'bold'),
-            fg='#5E9BE0',
-            bg='#0a0e27'
-        ).pack(anchor='w')
+        """Display summoner spells with icons"""
+        self._make_section_header(self.items_container, "SUMMONER SPELLS", "#5E9BE0", top_pad=15)
 
         spells_frame = tk.Frame(self.items_container, bg='#16213e', relief='solid', bd=1)
         spells_frame.pack(fill='x', pady=5)
@@ -404,23 +449,25 @@ class RuneDisplayWindow:
         row.pack(pady=10)
 
         for spell_id in spell_ids:
-            spell_name = SUMMONER_SPELLS.get(spell_id, f"Spell{spell_id}")
-
+            spell_name, spell_file = SUMMONER_SPELLS.get(spell_id, (f"Spell{spell_id}", ""))
             frame = tk.Frame(row, bg='#16213e')
-            frame.pack(side='left', padx=10)
+            frame.pack(side='left', padx=12)
 
-            label = tk.Label(
-                frame,
-                text=spell_name,
-                font=('Segoe UI', 10, 'bold'),
-                fg='white',
-                bg='#2a2a4e',
-                width=10,
-                height=2,
-                relief='solid',
-                bd=1
-            )
-            label.pack()
+            if spell_file:
+                url = SPELL_CDN + spell_file
+                img = fetch_image(url, size=(44, 44))
+                if img:
+                    self.image_refs.append(img)
+                    tk.Label(frame, image=img, bg='#16213e', bd=2, relief='solid').pack()
+                    tk.Label(frame, text=spell_name, font=('Segoe UI', 8),
+                             fg='#aaaacc', bg='#16213e').pack()
+                    continue
+
+            tk.Label(
+                frame, text=spell_name,
+                font=('Segoe UI', 10, 'bold'), fg='white',
+                bg='#2a2a4e', width=10, height=2, relief='solid', bd=1
+            ).pack()
 
     def _on_apply_clicked(self):
         """Handle apply button click"""

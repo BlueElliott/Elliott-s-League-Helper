@@ -12,7 +12,8 @@
       "Bash(exit 0)",
       "Bash(python:*)",
       "WebFetch(domain:u.gg)",
-      "WebFetch(domain:stats2.u.gg)"
+      "WebFetch(domain:stats2.u.gg)",
+      "WebFetch(domain:ddragon.leagueoflegends.com)"
     ]
   }
 }

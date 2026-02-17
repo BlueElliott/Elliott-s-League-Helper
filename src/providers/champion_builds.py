@@ -16,7 +16,7 @@ CHAMPION_BUILDS = {
             selected_perks=[
                 8112,  # Electrocute
                 8143,  # Sudden Impact
-                8120,  # Ghost Poro
+                8140,  # Grisly Mementos
                 8135,  # Treasure Hunter
                 8226,  # Manaflow Band
                 8237,  # Scorch
@@ -76,8 +76,8 @@ CHAMPION_BUILDS = {
                 8446,  # Demolish
                 8473,  # Bone Plating
                 8451,  # Overgrowth
-                8347,  # Cosmic Insight
-                8410,  # Approach Velocity
+                8304,  # Magical Footwear  (row 2)
+                8347,  # Cosmic Insight    (row 4)
                 5005,  # Attack Speed
                 5008,  # Adaptive Force
                 5002   # Armor
@@ -190,7 +190,7 @@ CHAMPION_BUILDS = {
             selected_perks=[
                 8112,  # Electrocute
                 8143,  # Sudden Impact
-                8120,  # Ghost Poro
+                8140,  # Grisly Mementos
                 8135,  # Treasure Hunter
                 8226,  # Manaflow Band
                 8237,  # Scorch
@@ -209,7 +209,7 @@ CHAMPION_BUILDS = {
             selected_perks=[
                 8128,  # Dark Harvest
                 8143,  # Sudden Impact
-                8120,  # Ghost Poro
+                8140,  # Grisly Mementos
                 8135,  # Treasure Hunter
                 8226,  # Manaflow Band
                 8236,  # Gathering Storm
@@ -228,7 +228,7 @@ CHAMPION_BUILDS = {
             selected_perks=[
                 8112,  # Electrocute
                 8143,  # Sudden Impact
-                8120,  # Ghost Poro
+                8140,  # Grisly Mementos
                 8135,  # Treasure Hunter
                 8009,  # Presence of Mind
                 8014,  # Coup de Grace
@@ -285,10 +285,10 @@ CHAMPION_BUILDS = {
             sub_style=8100,      # Domination
             selected_perks=[
                 8021,  # Fleet Footwork
-                9101,  # Overheal
+                9101,  # Absorb Life
                 9104,  # Legend: Alacrity
                 8014,  # Coup de Grace
-                8120,  # Ghost Poro
+                8143,  # Sudden Impact
                 8135,  # Treasure Hunter
                 5005,  # Attack Speed
                 5008,  # Adaptive Force
