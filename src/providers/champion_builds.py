@@ -356,7 +356,7 @@ CHAMPION_BUILDS = {
         'summoner_spells': [4, 3]  # Flash + Exhaust
     },
 
-    16: {  # Soraka (changed from Poppy)
+    16: {  # Soraka
         'runes': RuneData(
             primary_style=8200,  # Sorcery
             sub_style=8400,      # Resolve
@@ -373,6 +373,619 @@ CHAMPION_BUILDS = {
             ]
         ),
         'summoner_spells': [4, 14]  # Flash + Ignite
+    },
+
+    # === MORE MAGES / MID ===
+    157: {  # Yasuo
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8008,  # Lethal Tempo
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    777: {  # Yone
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8008,  # Lethal Tempo
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    55: {  # Katarina
+        'runes': RuneData(
+            primary_style=8100,  # Domination
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8112,  # Electrocute
+                8139,  # Taste of Blood
+                8140,  # Grisly Mementos
+                8135,  # Treasure Hunter
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    112: {  # Viktor
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8229,  # Arcane Comet
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8304,  # Magical Footwear
+                8345,  # Biscuit Delivery
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    61: {  # Orianna
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8229,  # Arcane Comet
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8304,  # Magical Footwear
+                8345,  # Biscuit Delivery
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    142: {  # Zoe
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8229,  # Arcane Comet
+                8226,  # Manaflow Band
+                8233,  # Absolute Focus
+                8237,  # Scorch
+                8304,  # Magical Footwear
+                8345,  # Biscuit Delivery
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    69: {  # Cassiopeia
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8230,  # Phase Rush
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8237,  # Scorch
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    268: {  # Azir
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8229,  # Arcane Comet
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]
+    },
+
+    # === MORE TOP LANERS ===
+    86: {  # Garen
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 6]  # Flash + Ghost
+    },
+
+    54: {  # Malphite
+        'runes': RuneData(
+            primary_style=8400,  # Resolve
+            sub_style=8200,      # Sorcery
+            selected_perks=[
+                8439,  # Aftershock
+                8446,  # Demolish
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                8229,  # Arcane Comet
+                8236,  # Gathering Storm
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]
+    },
+
+    114: {  # Fiora
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]
+    },
+
+    164: {  # Camille
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]
+    },
+
+    98: {  # Shen
+        'runes': RuneData(
+            primary_style=8400,  # Resolve
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8437,  # Grasp of the Undying
+                8446,  # Demolish
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]
+    },
+
+    39: {  # Irelia
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]
+    },
+
+    58: {  # Renekton
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 12]
+    },
+
+    17: {  # Teemo
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8230,  # Phase Rush
+                8226,  # Manaflow Band
+                8234,  # Celerity
+                8237,  # Scorch
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    # === MORE JUNGLERS ===
+    64: {  # Lee Sin
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]
+    },
+
+    104: {  # Graves
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8021,  # Fleet Footwork
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]
+    },
+
+    254: {  # Vi
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]
+    },
+
+    245: {  # Ekko
+        'runes': RuneData(
+            primary_style=8100,  # Domination
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8112,  # Electrocute
+                8139,  # Taste of Blood
+                8140,  # Grisly Mementos
+                8135,  # Treasure Hunter
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]
+    },
+
+    120: {  # Hecarim
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8400,      # Resolve
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]
+    },
+
+    28: {  # Evelynn
+        'runes': RuneData(
+            primary_style=8100,  # Domination
+            sub_style=8200,      # Sorcery
+            selected_perks=[
+                8128,  # Dark Harvest
+                8143,  # Sudden Impact
+                8140,  # Grisly Mementos
+                8135,  # Treasure Hunter
+                8226,  # Manaflow Band
+                8236,  # Gathering Storm
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]
+    },
+
+    141: {  # Kayn
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8010,  # Conqueror
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 11]
+    },
+
+    # === MORE ADCs ===
+    81: {  # Ezreal
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8021,  # Fleet Footwork
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 7]
+    },
+
+    21: {  # Miss Fortune
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8008,  # Lethal Tempo
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 7]
+    },
+
+    67: {  # Vayne
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8100,      # Domination
+            selected_perks=[
+                8021,  # Fleet Footwork
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8014,  # Coup de Grace
+                8143,  # Sudden Impact
+                8135,  # Treasure Hunter
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 7]
+    },
+
+    202: {  # Jhin
+        'runes': RuneData(
+            primary_style=8000,  # Precision
+            sub_style=8200,      # Sorcery
+            selected_perks=[
+                8021,  # Fleet Footwork
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                8017,  # Cut Down
+                8233,  # Absolute Focus
+                8237,  # Scorch
+                5005,  # Attack Speed
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 7]
+    },
+
+    # === MORE SUPPORTS ===
+    40: {  # Janna
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8214,  # Summon Aery
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 3]  # Flash + Exhaust
+    },
+
+    89: {  # Leona
+        'runes': RuneData(
+            primary_style=8400,  # Resolve
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8439,  # Aftershock
+                8446,  # Demolish
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                9101,  # Absorb Life
+                9104,  # Legend: Alacrity
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    53: {  # Blitzcrank
+        'runes': RuneData(
+            primary_style=8400,  # Resolve
+            sub_style=8000,      # Precision
+            selected_perks=[
+                8439,  # Aftershock
+                8446,  # Demolish
+                8473,  # Bone Plating
+                8451,  # Overgrowth
+                9101,  # Absorb Life
+                8014,  # Coup de Grace
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    25: {  # Morgana
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8229,  # Arcane Comet
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8237,  # Scorch
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 14]
+    },
+
+    267: {  # Nami
+        'runes': RuneData(
+            primary_style=8200,  # Sorcery
+            sub_style=8300,      # Inspiration
+            selected_perks=[
+                8214,  # Summon Aery
+                8226,  # Manaflow Band
+                8210,  # Transcendence
+                8236,  # Gathering Storm
+                8304,  # Magical Footwear
+                8347,  # Cosmic Insight
+                5008,  # Adaptive Force
+                5008,  # Adaptive Force
+                5002   # Armor
+            ]
+        ),
+        'summoner_spells': [4, 3]  # Flash + Exhaust
     },
 }
 
